@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # E-commerce Management System
 
 A full-stack **Smart Provision Store Management System** for a small family-owned grocery store: products, categories, inventory, POS billing, customers (with a self-service storefront), suppliers, sales reports — plus a set of AI-powered features (invoice OCR, AI product matching, sales forecasting, and a store chatbot).
@@ -298,3 +299,6 @@ This project is licensed under the **MIT License**.
 ---
 
 Built with React, FastAPI, and ❤️ for small grocery store management.
+=======
+# E-commerce
+>>>>>>> 76f3d937975c601e0739a414eb7f9b7506bd0a7b
