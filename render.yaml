@@ -12,9 +12,9 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_ORIGIN
-        value: http://localhost:5173
+        value: https://e-commerce-tau-ten-59.vercel.app
       - key: CORS_ORIGINS
-        value: http://localhost:5173,http://127.0.0.1:5173
+        value: https://e-commerce-tau-ten-59.vercel.app,http://localhost:5173,http://127.0.0.1:5173
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
