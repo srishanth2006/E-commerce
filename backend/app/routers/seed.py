@@ -1,19 +1,62 @@
 """
 routers/seed.py
 ---------------
-POST /seed/seed-data  - populate categories, brands, suppliers, products
-POST /seed/seed-admin - create initial admin (no auth required, one-time only)
+POST /seed/fix-schema  - add missing columns to tables created manually
+POST /seed/seed-data   - populate categories, brands, suppliers, products
 """
 
 from datetime import date, timedelta
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from app import models, schemas, auth
-from app.database import get_db
+from app.database import get_db, engine
 
 router = APIRouter(prefix="/seed", tags=["Seed Data"])
+
+
+@router.post("/fix-schema")
+def fix_schema(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.require_admin),
+):
+    """Add missing columns to tables that were created manually without all ORM fields."""
+    alterations = [
+        ("products", "ALTER TABLE products ADD COLUMN profit_margin_percent FLOAT NOT NULL DEFAULT 15"),
+        ("products", "ALTER TABLE products ADD COLUMN preset_quantities TEXT"),
+        ("products", "ALTER TABLE products ADD COLUMN image_url VARCHAR(255)"),
+        ("products", "ALTER TABLE products ADD COLUMN batch_number VARCHAR(64)"),
+        ("customers", "ALTER TABLE customers ADD COLUMN hashed_password VARCHAR(255)"),
+        ("customers", "ALTER TABLE customers ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE"),
+        ("customers", "ALTER TABLE customers ADD COLUMN is_flagged BOOLEAN NOT NULL DEFAULT FALSE"),
+        ("customers", "ALTER TABLE customers ADD COLUMN flag_reason VARCHAR(255)"),
+        ("customers", "ALTER TABLE customers ADD COLUMN is_verified BOOLEAN NOT NULL DEFAULT FALSE"),
+        ("customers", "ALTER TABLE customers ADD COLUMN verification_token VARCHAR(255)"),
+        ("customers", "ALTER TABLE customers ADD COLUMN verification_token_expires DATETIME"),
+        ("customers", "ALTER TABLE customers ADD COLUMN reset_token VARCHAR(255)"),
+        ("customers", "ALTER TABLE customers ADD COLUMN reset_token_expires DATETIME"),
+        ("customers", "ALTER TABLE customers ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP"),
+    ]
+
+    applied = []
+    already_exists = []
+    errors = []
+    with engine.begin() as conn:
+        for table, stmt in alterations:
+            try:
+                conn.execute(text(stmt))
+                applied.append(f"{table}.{stmt.split('ADD COLUMN ')[1].split(' ')[0]}")
+            except Exception as e:
+                err = str(e)
+                if "Duplicate column" in err:
+                    already_exists.append(stmt.split("ADD COLUMN ")[1].split(" ")[0])
+                else:
+                    errors.append(f"{table}: {err[:150]}")
+
+    return {"applied": applied, "already_exists": already_exists, "errors": errors}
 
 CATEGORIES = [
     ("Rice & Grains", "Rice, wheat, millets, poha, oats"),
