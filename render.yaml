@@ -1,10 +1,10 @@
 services:
   - type: web
     name: ecommerce-backend
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    runtime: python
     plan: free
-    healthCheckPath: /
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
         value: mysql+pymysql://3YPtJBBc9jYo6LJ.root:xEJDfQTLll4d6hCQ@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/sri_provision_store
