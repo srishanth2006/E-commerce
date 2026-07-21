@@ -22,9 +22,6 @@ import re
 from datetime import datetime, date
 from typing import Optional
 
-import numpy as np
-
-
 class OCRNotAvailable(Exception):
     pass
 
@@ -71,6 +68,13 @@ def _extract_from_image(file_bytes: bytes) -> str:
             f"Cannot read the uploaded image. Please ensure it is a valid PNG, JPG, or WEBP file. Error: {e}"
         ) from e
 
+    try:
+        import numpy as np
+    except ImportError as e:
+        raise OCRNotAvailable(
+            "OCR requires 'numpy' (pip install numpy)."
+        ) from e
+
     img_array = np.array(image)
 
     try:
@@ -111,6 +115,13 @@ def _extract_from_pdf(file_bytes: bytes) -> str:
         ) from e
 
     all_lines = []
+
+    try:
+        import numpy as np
+    except ImportError as e:
+        raise OCRNotAvailable(
+            "OCR requires 'numpy' (pip install numpy)."
+        ) from e
 
     for page_num in range(len(doc)):
         page = doc[page_num]
