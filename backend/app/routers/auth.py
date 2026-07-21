@@ -39,21 +39,27 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/seed-admin", status_code=status.HTTP_201_CREATED)
 def seed_admin(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
-    user_count = db.query(models.User).count()
-    if user_count > 0:
-        raise HTTPException(status_code=403, detail="Admin already exists. Use /auth/register instead.")
-    new_user = models.User(
-        username=user_in.username,
-        email=user_in.email,
-        hashed_password=auth.hash_password(user_in.password),
-        role="admin",
-        is_active=True,
-        is_verified=True,
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return {"message": "Admin created successfully", "username": new_user.username}
+    import logging
+    try:
+        user_count = db.query(models.User).count()
+        if user_count > 0:
+            raise HTTPException(status_code=403, detail="Admin already exists. Use /auth/register instead.")
+        new_user = models.User(
+            username=user_in.username,
+            email=user_in.email,
+            hashed_password=auth.hash_password(user_in.password),
+            role="admin",
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return {"message": "Admin created successfully", "username": new_user.username}
+    except Exception as e:
+        logging.error("seed-admin error: %s", str(e))
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ===========================================================================
