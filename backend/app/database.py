@@ -12,8 +12,24 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.config import settings
 
-# pool_pre_ping avoids "MySQL server has gone away" errors on idle connections
-engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True, echo=False)
+# pool_pre_ping avoids "MySQL server has gone away" errors on idle connections.
+# connect_args enable TLS (required by TiDB Cloud) and set a startup timeout
+# so the app can start even if the database is temporarily unreachable.
+_engine_kwargs = dict(
+    pool_pre_ping=True,
+    echo=False,
+    pool_recycle=300,
+    pool_timeout=10,
+)
+
+# TiDB Cloud (and most cloud MySQL providers) require SSL.
+_url = settings.DATABASE_URL
+if "tidbcloud.com" in _url or "tidb" in _url.lower():
+    _engine_kwargs["connect_args"] = {
+        "ssl": {"ssl_ca": "/etc/ssl/certs/ca-certificates.crt"},
+    }
+
+engine = create_engine(_url, **_engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

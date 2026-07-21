@@ -31,7 +31,11 @@ from app.routers import (
 # Creates any tables that don't already exist yet.
 # For a production project you'd normally use Alembic migrations instead,
 # but create_all() is perfect for getting a portfolio project running fast.
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as exc:
+    import logging
+    logging.warning("create_all failed on startup (will retry on first request): %s", exc)
 
 app = FastAPI(
     title="E-commerce Management System API",
@@ -86,11 +90,17 @@ app.include_router(support.router)
 @app.on_event("startup")
 def on_startup():
     import asyncio
+    import logging
     try:
         loop = asyncio.get_event_loop()
         websocket.set_event_loop(loop)
     except RuntimeError:
         pass
+    # Retry table creation in case the first attempt failed
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as exc:
+        logging.warning("Deferred create_all also failed: %s", exc)
 
 
 @app.get("/", tags=["Health"])
