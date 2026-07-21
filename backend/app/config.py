@@ -105,6 +105,10 @@ class Settings(BaseSettings):
         origins = {self.FRONTEND_ORIGIN, "http://localhost:5173", "http://127.0.0.1:5173"}
         if self.CORS_ORIGINS:
             origins.update(o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip())
+        # Auto-detect Vercel preview deployments
+        vercel_url = os.environ.get("VERCEL_URL")
+        if vercel_url:
+            origins.add(f"https://{vercel_url}")
         return [o for o in origins if o]
 
 

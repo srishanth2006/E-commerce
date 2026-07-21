@@ -25,7 +25,7 @@ from app.middleware import limiter
 from app.routers import (
     auth, products, categories, brands, customers, suppliers, sales, inventory, dashboard,
     purchases, storefront, forecasting, chatbot, payments, search, reports, notifications,
-    orders, coupons, referrals, websocket, support,
+    orders, coupons, referrals, websocket, support, seed,
 )
 
 # Creates any tables that don't already exist yet.
@@ -85,6 +85,7 @@ app.include_router(coupons.router)
 app.include_router(referrals.router)
 app.include_router(websocket.router)
 app.include_router(support.router)
+app.include_router(seed.router)
 
 
 @app.on_event("startup")
