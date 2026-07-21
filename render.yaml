@@ -3,29 +3,31 @@ services:
     name: ecommerce-backend
     runtime: docker
     plan: free
+    healthCheckPath: /
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: mysql+pymysql://3YPtJBBc9jYo6LJ.root:xEJDfQTLll4d6hCQ@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/sri_provision_store
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_ORIGIN
-        sync: false
+        value: http://localhost:5173
       - key: CORS_ORIGINS
-        sync: false
+        value: http://localhost:5173,http://127.0.0.1:5173
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
-        value: 587
+        value: "587"
       - key: SMTP_USER
-        sync: false
+        value: srishanth244@gmail.com
       - key: SMTP_PASSWORD
-        sync: false
+        value: vfbghfbzbpwcqmxr
       - key: EMAIL_FROM
-        sync: false
+        value: srishanth244@gmail.com
       - key: UPI_ID
         value: srishanth244@okicici
       - key: UPI_NAME
         value: E-commerce
-    healthCheckPath: /
+      - key: DEV_EXPOSE_TOKENS
+        value: "False"
