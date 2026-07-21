@@ -35,6 +35,7 @@ export default function StorefrontLayout() {
             <Link to="/home" className="px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Home</Link>
             <Link to="/shop" className="px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Shop</Link>
             <Link to="/offers" className="px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Offers</Link>
+            <Link to="/help" className="px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Help</Link>
             <Link to="/wishlist" className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Wishlist">
               <Heart size={18} />
             </Link>

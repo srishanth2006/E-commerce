@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { Menu, Moon, Sun, LogOut, User as UserIcon, ChevronDown, Bell } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useNotifications } from "../context/NotificationContext";
 import Breadcrumb from "./Breadcrumb";
 import { getNotifications, markAllNotificationsRead } from "../api/endpoints";
 
@@ -35,6 +36,7 @@ function playAlertBeep() {
 export default function Navbar({ onMenuClick }) {
   const { user, userType, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
+  const { latestNotification } = useNotifications();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -63,6 +65,13 @@ export default function Navbar({ onMenuClick }) {
     const interval = setInterval(loadNotifications, 30000); // poll every 30s
     return () => clearInterval(interval);
   }, [loadNotifications]);
+
+  // Real-time: re-fetch immediately when WebSocket pushes a new notification
+  useEffect(() => {
+    if (latestNotification && userType === "staff") {
+      loadNotifications();
+    }
+  }, [latestNotification, userType, loadNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 

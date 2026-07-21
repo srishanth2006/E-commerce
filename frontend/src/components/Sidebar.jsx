@@ -7,7 +7,7 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Package, Tags, Boxes, ShoppingCart,
-  Users, Truck, BarChart3, X, Store, ScanLine, TrendingUp, Bell, Receipt, Tag, UserCog,
+  Users, Truck, BarChart3, X, Store, ScanLine, TrendingUp, Bell, Receipt, Tag, UserCog, Headphones, MessageSquareReply,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -25,6 +25,8 @@ const allNavItems = [
   { to: "/admin/orders", label: "Orders", icon: Package, adminOnly: true },
   { to: "/admin/coupons", label: "Coupons", icon: Tag, adminOnly: true },
   { to: "/admin/staff", label: "Staff", icon: UserCog, adminOnly: true },
+  { to: "/admin/support", label: "Support Tickets", icon: Headphones, adminOnly: true },
+  { to: "/admin/complaints", label: "Reply to Complaints", icon: MessageSquareReply },
   { to: "/reports", label: "Reports", icon: BarChart3, adminOnly: true },
   { to: "/notifications", label: "Notifications", icon: Bell, adminOnly: true },
 ];

@@ -16,6 +16,7 @@ from sqlalchemy import func
 from app import models, schemas
 from app.auth import get_current_customer, get_current_staff_user
 from app.database import get_db
+from app.routers.websocket import broadcast_sync
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -172,6 +173,12 @@ def place_order(
     ))
     db.commit()
     db.refresh(order)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": order.id, "type": "order_success", "title": "New order received", "message": f"Order #{order.id}: {len(payload.items)} item(s), total ₹{grand_total:.2f}", "is_read": False},
+    })
+
     return order
 
 
@@ -226,6 +233,12 @@ def update_order_status(
     ))
     db.commit()
     db.refresh(order)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": order.id, "type": "order_success", "title": f"Order #{order.id} updated", "message": f"Status changed to: {payload.status}", "is_read": False},
+    })
+
     return order
 
 
@@ -364,6 +377,12 @@ def confirm_upi_payment(
     ))
     db.commit()
     db.refresh(order)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": order.id, "type": "order_success", "title": f"Payment confirmed for Order #{order.id}", "message": f"UTR: {utr_number.strip()} — ₹{order.grand_total:.2f}", "is_read": False},
+    })
+
     return order
 
 
@@ -388,6 +407,12 @@ def admin_confirm_payment(
     ))
     db.commit()
     db.refresh(order)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": order.id, "type": "order_success", "title": f"Payment confirmed for Order #{order.id}", "message": f"Admin verified — ₹{order.grand_total:.2f}", "is_read": False},
+    })
+
     return order
 
 
@@ -417,4 +442,10 @@ def confirm_refund(
     ))
     db.commit()
     db.refresh(order)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": order.id, "type": "order_success", "title": f"Refund confirmed for Order #{order.id}", "message": f"₹{order.refund_amount:.2f} refund completed", "is_read": False},
+    })
+
     return order

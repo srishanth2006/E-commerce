@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session, joinedload
 from app import models, schemas
 from app.auth import get_current_staff_user, require_role
 from app.database import get_db
+from app.routers.websocket import broadcast_sync
 from app.utils.email import send_email
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
@@ -148,12 +149,19 @@ def create_sale(
     db.refresh(sale)
 
     # MODULE 19: notification + customer email on order success
-    db.add(models.Notification(
+    notif = models.Notification(
         type="order_success",
         title=f"New sale #{sale.sale_id}",
         message=f"Total \u20b9{sale.grand_total:.2f} via {sale.payment_method}.",
-    ))
+    )
+    db.add(notif)
     db.commit()
+    db.refresh(notif)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": notif.id, "type": notif.type, "title": notif.title, "message": notif.message, "is_read": False, "created_at": str(notif.created_at)},
+    })
 
     if payload.customer_id:
         customer = db.query(models.Customer).filter(models.Customer.customer_id == payload.customer_id).first()
@@ -286,13 +294,21 @@ def update_sale(
         if customer:
             customer.loyalty_points += int(grand_total // 100)
 
-    db.add(models.Notification(
+    notif2 = models.Notification(
         type="system",
         title=f"Invoice #{sale_id} updated",
         message=f"Invoice #{sale_id} was edited by {current_user.username}. New total: ₹{grand_total:.2f}",
-    ))
+    )
+    db.add(notif2)
     db.commit()
+    db.refresh(notif2)
     db.refresh(sale)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": notif2.id, "type": notif2.type, "title": notif2.title, "message": notif2.message, "is_read": False, "created_at": str(notif2.created_at)},
+    })
+
     return sale
 
 
@@ -338,11 +354,17 @@ def delete_sale(
             customer.loyalty_points = max(0, customer.loyalty_points - points)
 
     db.query(models.SaleItem).filter(models.SaleItem.sale_id == sale_id).delete()
-    db.delete(sale)
 
-    db.add(models.Notification(
+    notif3 = models.Notification(
         type="system",
         title=f"Invoice #{sale_id} deleted",
         message=f"Invoice #{sale_id} (₹{sale.grand_total:.2f}) was deleted by {current_user.username}.",
-    ))
+    )
+    db.add(notif3)
+    db.delete(sale)
     db.commit()
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": notif3.id, "type": notif3.type, "title": notif3.title, "message": notif3.message, "is_read": False, "created_at": str(notif3.created_at)},
+    })

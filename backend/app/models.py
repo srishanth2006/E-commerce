@@ -448,3 +448,22 @@ class Referral(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     referrer = relationship("Customer", foreign_keys=[referrer_id])
     referred = relationship("Customer", foreign_keys=[referred_id])
+
+
+class SupportTicket(Base):
+    __tablename__ = "support_tickets"
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(150), nullable=True)
+    order_id = Column(String(20), nullable=True)
+    subject = Column(String(50), nullable=True)
+    message = Column(Text, nullable=False)
+    status = Column(
+        Enum("open", "in_progress", "resolved", "closed", name="ticket_status"),
+        default="open",
+    )
+    admin_reply = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    customer = relationship("Customer", foreign_keys=[customer_id])

@@ -657,3 +657,30 @@ class ReferralOut(BaseModel):
     created_at: datetime
     class Config:
         from_attributes = True
+
+
+# --- Support Ticket Schemas ---
+class SupportTicketCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    order_id: Optional[str] = None
+    subject: Optional[str] = None
+    message: str
+
+class SupportTicketReply(BaseModel):
+    admin_reply: str
+    status: Optional[str] = "in_progress"
+
+class SupportTicketOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    customer_id: Optional[int] = None
+    name: str
+    email: Optional[str] = None
+    order_id: Optional[str] = None
+    subject: Optional[str] = None
+    message: str
+    status: str
+    admin_reply: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None

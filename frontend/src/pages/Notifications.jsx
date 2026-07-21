@@ -5,10 +5,11 @@
  * of this same data).
  */
 import { useEffect, useState } from "react";
-import { Bell, Check, AlertTriangle, ShoppingBag, FileText, Calendar, Info } from "lucide-react";
+import { Bell, Check, AlertTriangle, ShoppingBag, FileText, Calendar, Info, Wifi, WifiOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from "../api/endpoints";
 import Loader from "../components/Loader";
+import { useNotifications } from "../context/NotificationContext";
 
 const ICONS = {
   low_stock: AlertTriangle,
@@ -31,6 +32,7 @@ const COLORS = {
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { connected, latestNotification, addRefreshListener } = useNotifications();
 
   const load = async () => {
     setLoading(true);
@@ -47,6 +49,20 @@ export default function Notifications() {
   useEffect(() => {
     load();
   }, []);
+
+  // Auto-refresh when a new notification arrives via WebSocket
+  useEffect(() => {
+    return addRefreshListener(() => {
+      load();
+    });
+  }, [addRefreshListener]);
+
+  // Also refresh when latestNotification changes (backup)
+  useEffect(() => {
+    if (latestNotification) {
+      load();
+    }
+  }, [latestNotification]);
 
   const handleMarkRead = async (id) => {
     try {
@@ -68,10 +84,18 @@ export default function Notifications() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <Bell size={20} /> Notifications
           </h1>
+          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
+            connected
+              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+          }`}>
+            {connected ? <Wifi size={12} /> : <WifiOff size={12} />}
+            {connected ? "Live" : "Offline"}
+          </span>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Low stock alerts, purchase confirmations, orders, and invoice scans.
           </p>

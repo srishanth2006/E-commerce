@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
@@ -37,6 +38,8 @@ const BillHistory = lazy(() => import("./pages/BillHistory"));
 const AdminOrders = lazy(() => import("./pages/AdminOrders"));
 const AdminCoupons = lazy(() => import("./pages/AdminCoupons"));
 const Staff = lazy(() => import("./pages/Staff"));
+const SupportTickets = lazy(() => import("./pages/SupportTickets"));
+const CustomerComplaints = lazy(() => import("./pages/CustomerComplaints"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const Home = lazy(() => import("./pages/Home"));
@@ -52,6 +55,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Orders = lazy(() => import("./pages/Orders"));
 const ReferralPage = lazy(() => import("./pages/ReferralPage"));
 const CustomerProfile = lazy(() => import("./pages/CustomerProfile"));
+const HelpDesk = lazy(() => import("./pages/HelpDesk"));
 
 function Loader() {
   return (
@@ -65,7 +69,8 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <NotificationProvider>
+          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <ErrorBoundary>
         <Suspense fallback={<Loader />}>
         <Routes>
@@ -122,6 +127,12 @@ export default function App() {
             <Route path="admin/staff" element={
               <ProtectedRoute requiredRole="admin"><Staff /></ProtectedRoute>
             } />
+            <Route path="admin/support" element={
+              <ProtectedRoute requiredRole="admin"><SupportTickets /></ProtectedRoute>
+            } />
+            <Route path="admin/complaints" element={
+              <ProtectedRoute><CustomerComplaints /></ProtectedRoute>
+            } />
           </Route>
 
           {/* ---- Customer storefront area ---- */}
@@ -140,12 +151,14 @@ export default function App() {
             <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="profile" element={<ProtectedRoute><CustomerProfile /></ProtectedRoute>} />
             <Route path="referrals" element={<ProtectedRoute><ReferralPage /></ProtectedRoute>} />
+            <Route path="help" element={<HelpDesk />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
         </ErrorBoundary>
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

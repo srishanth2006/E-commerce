@@ -25,7 +25,7 @@ from app.middleware import limiter
 from app.routers import (
     auth, products, categories, brands, customers, suppliers, sales, inventory, dashboard,
     purchases, storefront, forecasting, chatbot, payments, search, reports, notifications,
-    orders, coupons, referrals, websocket,
+    orders, coupons, referrals, websocket, support,
 )
 
 # Creates any tables that don't already exist yet.
@@ -80,6 +80,17 @@ app.include_router(orders.router)
 app.include_router(coupons.router)
 app.include_router(referrals.router)
 app.include_router(websocket.router)
+app.include_router(support.router)
+
+
+@app.on_event("startup")
+def on_startup():
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+        websocket.set_event_loop(loop)
+    except RuntimeError:
+        pass
 
 
 @app.get("/", tags=["Health"])

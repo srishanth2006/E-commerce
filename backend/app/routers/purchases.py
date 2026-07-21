@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session, joinedload
 from app import models, schemas
 from app.auth import get_current_staff_user
 from app.database import get_db
+from app.routers.websocket import broadcast_sync
 from app.utils import ocr as ocr_utils
 from app.utils.ai_matching import find_best_match, AUTO_MATCH_THRESHOLD
 from app.utils.email import send_email
@@ -60,12 +61,19 @@ async def scan_invoice(
         "invoice_date": None, "gst_number": None, "line_items": [],
     }
 
-    db.add(models.Notification(
+    notif = models.Notification(
         type="invoice_uploaded",
         title="Invoice uploaded",
         message=f"'{file.filename}' uploaded - {len(parsed['line_items'])} item(s) detected. Review before committing.",
-    ))
+    )
+    db.add(notif)
     db.commit()
+    db.refresh(notif)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": notif.id, "type": notif.type, "title": notif.title, "message": notif.message, "is_read": False, "created_at": str(notif.created_at)},
+    })
 
     warnings = []
     if ocr_failed:
@@ -245,13 +253,20 @@ def commit_purchase_bill(
     db.refresh(bill)
 
     # MODULE 19: notification + email on successful purchase
-    db.add(models.Notification(
+    notif2 = models.Notification(
         type="purchase_success",
         title="Purchase bill recorded",
         message=f"Invoice {bill.invoice_number or bill.id}: {len(payload.items)} item(s), "
         f"total \u20b9{bill.total_amount:.2f}",
-    ))
+    )
+    db.add(notif2)
     db.commit()
+    db.refresh(notif2)
+
+    broadcast_sync({
+        "type": "notification",
+        "data": {"id": notif2.id, "type": notif2.type, "title": notif2.title, "message": notif2.message, "is_read": False, "created_at": str(notif2.created_at)},
+    })
 
     return (
         db.query(models.PurchaseBill)

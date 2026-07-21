@@ -312,6 +312,17 @@ export default function Checkout() {
       toast.error("Your cart is empty");
       return;
     }
+    const outOfStockItems = cart.filter((item) => item.product?.stock_quantity !== undefined && item.product.stock_quantity <= 0);
+    if (outOfStockItems.length > 0) {
+      toast.error(`${outOfStockItems.length} item(s) are out of stock. Please remove them from your cart.`);
+      return;
+    }
+    const exceedsStock = cart.filter((item) => item.product?.stock_quantity !== undefined && item.quantity > item.product.stock_quantity);
+    if (exceedsStock.length > 0) {
+      const names = exceedsStock.map((i) => i.product?.name || "Item").join(", ");
+      toast.error(`Insufficient stock for: ${names}. Please reduce quantities.`);
+      return;
+    }
     setPlacing(true);
     try {
       const deliveryAddr = fulfillment === "delivery"

@@ -22,6 +22,7 @@ from app import models, schemas
 from app.auth import get_current_staff_user
 from app.database import get_db
 from app.utils.email import send_email
+from app.routers.websocket import broadcast_sync
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
@@ -78,13 +79,20 @@ def adjust_stock(
     # single adjustment while stock stays low) by checking whether this
     # particular change is what pushed it at/under the threshold.
     if product.stock_quantity <= product.reorder_level:
-        db.add(models.Notification(
+        notif = models.Notification(
             type="low_stock",
             title=f"Low stock: {product.name}",
             message=f"{product.name} is down to {product.stock_quantity} {product.unit} "
             f"(reorder level: {product.reorder_level}).",
-        ))
+        )
+        db.add(notif)
         db.commit()
+        db.refresh(notif)
+
+        broadcast_sync({
+            "type": "notification",
+            "data": {"id": notif.id, "type": notif.type, "title": notif.title, "message": notif.message, "is_read": False, "created_at": str(notif.created_at)},
+        })
 
         admins = db.query(models.User).filter(models.User.role == "admin", models.User.is_active == True).all()  # noqa: E712
         for admin in admins:
