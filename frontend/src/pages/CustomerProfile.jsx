@@ -4,9 +4,10 @@
  * MODULE 3 - customer self-service profile + saved addresses.
  */
 import { useEffect, useState } from "react";
-import { User, MapPin, Plus, Trash2, Award } from "lucide-react";
+import { User, MapPin, Plus, Trash2, Award, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getMyProfile, updateMyProfile, getMyAddresses, addMyAddress, deleteMyAddress } from "../api/endpoints";
+import { detectLocation } from "../utils/geolocation";
 
 export default function CustomerProfile() {
   const [profile, setProfile] = useState(null);
@@ -14,6 +15,7 @@ export default function CustomerProfile() {
   const [form, setForm] = useState({ name: "", phone: "", address: "" });
   const [newAddress, setNewAddress] = useState({ label: "Home", line1: "", city: "", state: "", pincode: "" });
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const load = async () => {
     const [pRes, aRes] = await Promise.allSettled([getMyProfile(), getMyAddresses()]);
@@ -59,8 +61,31 @@ export default function CustomerProfile() {
   const handleDeleteAddress = async (id) => {
     try {
       await deleteMyAddress(id);
-      load();
     } catch { toast.error("Failed to delete address"); }
+  };
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported");
+      return;
+    }
+    setLocating(true);
+    detectLocation()
+      .then((loc) => {
+        setNewAddress((prev) => ({
+          ...prev,
+          line1: loc.line1,
+          city: loc.city,
+          state: loc.state,
+          pincode: loc.pincode,
+        }));
+        setShowAddressForm(true);
+        toast.success("Location detected! Review and save your address.");
+      })
+      .catch(() => {
+        toast("Could not detect location. Enter it manually.");
+      })
+      .finally(() => setLocating(false));
   };
 
   if (!profile) return <p className="text-center text-gray-400 py-10">Loading profile...</p>;
@@ -102,9 +127,15 @@ export default function CustomerProfile() {
       <div className="card space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-sm flex items-center gap-1.5"><MapPin size={14} /> Saved Addresses</h2>
-          <button onClick={() => setShowAddressForm((v) => !v)} className="text-xs text-primary-600 hover:underline flex items-center gap-1">
-            <Plus size={12} /> Add
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={handleDetectLocation} disabled={locating} className="text-xs text-primary-600 hover:underline flex items-center gap-1">
+              {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
+              {locating ? "Detecting..." : "Detect Location"}
+            </button>
+            <button onClick={() => setShowAddressForm((v) => !v)} className="text-xs text-primary-600 hover:underline flex items-center gap-1">
+              <Plus size={12} /> Add
+            </button>
+          </div>
         </div>
 
         {addresses.map((a) => (

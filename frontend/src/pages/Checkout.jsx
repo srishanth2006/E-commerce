@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import {
   getMyCart, getMyAddresses, addMyAddress, placeOrder, getMyProfile, confirmPayment, getUpiQr, getOrder
 } from "../api/endpoints";
+import { detectLocation } from "../utils/geolocation";
 import api from "../api/axios";
 
 function UpiPaymentPage({ orderId, orderUid, total, qrData, onPaid, onSkip }) {
@@ -229,32 +230,16 @@ export default function Checkout() {
   const detectCurrentLocation = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const resp = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
-            { headers: { "Accept-Language": "en" } }
-          );
-          const data = await resp.json();
-          const addr = data.address || {};
-          const line1 = [addr.house_number, addr.road, addr.neighbourhood].filter(Boolean).join(", ") || data.display_name?.split(",")[0] || "";
-          const city = addr.city || addr.town || addr.village || addr.county || "";
-          const state = addr.state || "";
-          const pincode = addr.postcode || "";
-          setNewAddress({ line1, line2: "", city, state, pincode });
-          setShowNewAddress(true);
-          toast.success("Location detected! Review and save your address.");
-        } catch {
-          toast("Could not detect address from location. Enter it manually.");
-        } finally {
-          setLocating(false);
-        }
-      },
-      () => { setLocating(false); },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+    detectLocation()
+      .then((loc) => {
+        setNewAddress({ line1: loc.line1, line2: loc.line2, city: loc.city, state: loc.state, pincode: loc.pincode });
+        setShowNewAddress(true);
+        toast.success("Location detected! Review and save your address.");
+      })
+      .catch(() => {
+        toast("Could not detect address. Enter it manually.");
+      })
+      .finally(() => setLocating(false));
   };
 
   const afterDiscount = Math.max(0, subtotal() - couponDiscount);
