@@ -32,7 +32,7 @@ from app import models, schemas, auth
 from app.config import settings
 from app.database import get_db
 from app.middleware import limiter
-from app.utils.email import send_verification_email, send_password_reset_email
+from app.utils.email import send_verification_email, send_password_reset_email, send_password_changed_notification
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -303,6 +303,12 @@ def reset_password(payload: schemas.ResetPasswordRequest, db: Session = Depends(
     account.reset_token_expires = None
     db.commit()
 
+    name = getattr(account, "name", None) or getattr(account, "username", "there")
+    try:
+        send_password_changed_notification(account.email, name)
+    except Exception:
+        pass
+
     return schemas.MessageResponse(message="Password has been reset successfully. You can now log in.")
 
 
@@ -405,8 +411,10 @@ def update_user(
             raise HTTPException(status_code=400, detail="Username already taken")
 
     update_data = payload.model_dump(exclude_unset=True)
+    password_changed = False
     if "password" in update_data and update_data["password"]:
         update_data["hashed_password"] = auth.hash_password(update_data.pop("password"))
+        password_changed = True
     else:
         update_data.pop("password", None)
 
@@ -414,6 +422,13 @@ def update_user(
         setattr(user, k, v)
     db.commit()
     db.refresh(user)
+
+    if password_changed and user.email:
+        try:
+            send_password_changed_notification(user.email, user.username)
+        except Exception:
+            pass
+
     return user
 
 

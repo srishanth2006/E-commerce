@@ -68,3 +68,14 @@ def send_password_reset_email(to_email: str, name: str, token: str, frontend_url
         f"your password will not be changed."
     )
     return send_email(to_email, "Reset your E-commerce password", body)
+
+
+def send_password_changed_notification(to_email: str, name: str) -> bool:
+    body = (
+        f"Hi {name},\n\n"
+        f"This is a confirmation that your E-commerce account password "
+        f"was changed successfully.\n\n"
+        f"If you did not make this change, please contact support "
+        f"immediately and reset your password."
+    )
+    return send_email(to_email, "Your E-commerce password was changed", body)
