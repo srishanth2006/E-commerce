@@ -5,7 +5,7 @@
  * batch/expiry tracking, MRP/GST/discount, min/max stock, image upload.
  */
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Search, Package, Upload, ImageOff, Barcode as BarcodeIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Package, Upload, ImageOff, Barcode as BarcodeIcon, ToggleLeft, ToggleRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Modal from "../components/Modal";
@@ -15,6 +15,7 @@ import StockBadge from "../components/StockBadge";
 import {
   getProducts, createProduct, updateProduct, deleteProduct, getCategories,
   uploadProductImage, getBrands, createBrand, barcodeImageUrl, qrCodeImageUrl,
+  toggleProductActive,
 } from "../api/endpoints";
 
 const API_BASE =
@@ -189,6 +190,16 @@ export default function Products() {
     return "text-gray-500 dark:text-gray-400";
   };
 
+  const handleToggleActive = async (product) => {
+    try {
+      const res = await toggleProductActive(product.product_id);
+      toast.success(`Product ${res.data.is_active ? "activated" : "deactivated"}`);
+      loadProducts();
+    } catch {
+      toast.error("Failed to update status");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -223,16 +234,17 @@ export default function Products() {
                   <th>Purchase Price</th>
                   <th>Selling Price</th>
                   <th>Stock</th>
+                  <th>Status</th>
                   <th>Expiry</th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {products.length === 0 && (
-                  <tr><td colSpan={8} className="text-center text-gray-400 py-8">No products found</td></tr>
+                  <tr><td colSpan={9} className="text-center text-gray-400 py-8">No products found</td></tr>
                 )}
                 {products.map((p) => (
-                  <tr key={p.product_id}>
+                  <tr key={p.product_id} className={!p.is_active ? "opacity-60" : ""}>
                     <td>
                       {p.image_url ? (
                         <img src={`${API_BASE}${p.image_url}`} alt={p.name} className="w-10 h-10 rounded-lg object-cover" />
@@ -250,6 +262,20 @@ export default function Products() {
                     <td>₹{(p.purchase_price ?? 0).toFixed(2)}</td>
                     <td>₹{(p.selling_price ?? 0).toFixed(2)}</td>
                     <td><StockBadge stock={p.stock_quantity} reorderLevel={p.reorder_level} /></td>
+                    <td>
+                      <button
+                        onClick={() => handleToggleActive(p)}
+                        className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full transition ${
+                          p.is_active
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200"
+                        }`}
+                        title={p.is_active ? "Click to deactivate" : "Click to activate"}
+                      >
+                        {p.is_active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                        {p.is_active ? "Active" : "Inactive"}
+                      </button>
+                    </td>
                     <td className={expiryColor(p.expiry_date)}>{p.expiry_date || "—"}</td>
                     <td>
                       <div className="flex justify-end gap-2">

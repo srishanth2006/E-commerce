@@ -113,6 +113,7 @@ export default function ProductDetail() {
     : 0;
 
   const inStock = product.stock_quantity === undefined || product.stock_quantity > 0;
+  const isActive = product.is_active !== false;
   const presets = parsePresets(product.preset_quantities);
   const activeQty = isCustom ? (parseFloat(customQty) || 0) : quantity;
   const lineTotal = (product.selling_price ?? 0) * activeQty;
@@ -266,18 +267,20 @@ export default function ProductDetail() {
 
             {/* Stock Indicator */}
             <div className="flex items-center gap-2">
-              <span className={`relative flex h-3 w-3 ${inStock ? "" : ""}`}>
-                {inStock && (
+              <span className={`relative flex h-3 w-3 ${inStock && isActive ? "" : ""}`}>
+                {inStock && isActive && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                 )}
-                <span className={`relative inline-flex rounded-full h-3 w-3 ${inStock ? "bg-green-500" : "bg-red-500"}`} />
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${!isActive ? "bg-orange-500" : inStock ? "bg-green-500" : "bg-red-500"}`} />
               </span>
-              <span className={`text-sm font-semibold ${inStock ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
-                {inStock
-                  ? product.stock_quantity != null && product.stock_quantity <= (product.reorder_level ?? 10)
-                    ? `Low Stock - Only ${product.stock_quantity} left`
-                    : product.stock_quantity != null ? `In Stock (${product.stock_quantity} available)` : "In Stock"
-                  : "Out of Stock"}
+              <span className={`text-sm font-semibold ${!isActive ? "text-orange-500 dark:text-orange-400" : inStock ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
+                {!isActive
+                  ? "Currently Unavailable"
+                  : inStock
+                    ? product.stock_quantity != null && product.stock_quantity <= (product.reorder_level ?? 10)
+                      ? `Low Stock - Only ${product.stock_quantity} left`
+                      : product.stock_quantity != null ? `In Stock (${product.stock_quantity} available)` : "In Stock"
+                    : "Out of Stock"}
               </span>
             </div>
 
@@ -373,15 +376,15 @@ export default function ProductDetail() {
             <div className="flex items-center gap-3 pt-2">
               <button
                 onClick={handleAddToCart}
-                disabled={!inStock}
+                disabled={!inStock || !isActive}
                 className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-2xl text-base font-bold transition-all duration-200 ${
-                  inStock
+                  inStock && isActive
                     ? "bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-500 dark:to-primary-400 text-white shadow-lg shadow-primary-200 dark:shadow-primary-900/30 hover:shadow-xl hover:shadow-primary-300 dark:hover:shadow-primary-900/40 hover:scale-[1.02] active:scale-[0.98]"
                     : "bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
                 }`}
               >
                 <ShoppingCart size={20} />
-                {inStock ? "Add to Cart" : "Out of Stock"}
+                {!isActive ? "Currently Unavailable" : inStock ? "Add to Cart" : "Out of Stock"}
               </button>
 
               <button

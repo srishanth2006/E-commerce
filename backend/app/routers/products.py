@@ -203,6 +203,22 @@ def delete_product(
     return None
 
 
+@router.patch("/{product_id}/toggle-active", response_model=schemas.ProductOut)
+def toggle_product_active(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_staff_user),
+):
+    """Toggle a product's active/inactive (out of stock) status."""
+    product = db.query(models.Product).filter(models.Product.product_id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    product.is_active = not product.is_active
+    db.commit()
+    db.refresh(product)
+    return product
+
+
 @router.post("/{product_id}/image", response_model=schemas.ProductOut)
 def upload_primary_image(
     product_id: int,

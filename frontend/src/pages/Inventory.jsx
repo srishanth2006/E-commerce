@@ -4,13 +4,13 @@
  * Stock levels overview + manual stock adjustment form + inventory history log.
  */
 import { useEffect, useState } from "react";
-import { Boxes, PlusCircle, History, Search } from "lucide-react";
+import { Boxes, PlusCircle, History, Search, ToggleLeft, ToggleRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Modal from "../components/Modal";
 import Loader from "../components/Loader";
 import StockBadge from "../components/StockBadge";
-import { getStockLevels, adjustStock, getInventoryLogs } from "../api/endpoints";
+import { getStockLevels, adjustStock, getInventoryLogs, toggleProductActive } from "../api/endpoints";
 
 export default function Inventory() {
   const [products, setProducts] = useState([]);
@@ -38,6 +38,16 @@ export default function Inventory() {
   };
 
   const filtered = products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+
+  const handleToggleActive = async (product) => {
+    try {
+      const res = await toggleProductActive(product.product_id);
+      toast.success(`Product ${res.data.is_active ? "activated" : "deactivated"}`);
+      load();
+    } catch {
+      toast.error("Failed to update status");
+    }
+  };
 
   const openAdjust = (product) => {
     setTarget(product);
@@ -101,19 +111,34 @@ export default function Inventory() {
                   <th>Current Stock</th>
                   <th>Reorder Level</th>
                   <th>Status</th>
+                  <th>Availability</th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 && (
-                  <tr><td colSpan={5} className="text-center text-gray-400 py-8">No products found</td></tr>
+                  <tr><td colSpan={6} className="text-center text-gray-400 py-8">No products found</td></tr>
                 )}
                 {filtered.map((p) => (
-                  <tr key={p.product_id}>
+                  <tr key={p.product_id} className={!p.is_active ? "opacity-60" : ""}>
                     <td className="font-medium">{p.name}</td>
                     <td>{p.stock_quantity} {p.unit}</td>
                     <td>{p.reorder_level}</td>
                     <td><StockBadge stock={p.stock_quantity} reorderLevel={p.reorder_level} /></td>
+                    <td>
+                      <button
+                        onClick={() => handleToggleActive(p)}
+                        className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full transition ${
+                          p.is_active
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200"
+                        }`}
+                        title={p.is_active ? "Click to deactivate (mark out of stock)" : "Click to activate"}
+                      >
+                        {p.is_active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                        {p.is_active ? "Active" : "Unavailable"}
+                      </button>
+                    </td>
                     <td>
                       <div className="flex justify-end gap-2">
                         <button onClick={() => openAdjust(p)} className="text-xs btn-primary !py-1.5">

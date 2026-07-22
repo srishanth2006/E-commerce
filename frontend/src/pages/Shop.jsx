@@ -257,12 +257,13 @@ export default function Shop() {
               const discount = getDiscount(p);
               const stock = p.stock_quantity ?? 0;
               const outOfStock = stock <= 0;
+              const unavailable = p.is_active === false;
               const lowStock = stock > 0 && stock <= (p.reorder_level ?? 10);
 
               return (
                 <div
                   key={p.product_id}
-                  className={`group relative rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-emerald-900/10 border border-gray-100 dark:border-gray-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${outOfStock ? "opacity-75" : ""}`}
+                  className={`group relative rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-emerald-900/10 border border-gray-100 dark:border-gray-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${outOfStock || unavailable ? "opacity-75" : ""}`}
                 >
                   {/* Image area */}
                   <div className="relative aspect-square overflow-hidden">
@@ -285,6 +286,13 @@ export default function Shop() {
                       </div>
                     )}
 
+                    {/* Currently Unavailable badge */}
+                    {unavailable && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                        <span className="px-4 py-2 bg-red-900/80 text-white text-xs font-bold rounded-xl backdrop-blur-sm">Currently Unavailable</span>
+                      </div>
+                    )}
+
                     {/* Low Stock badge */}
                     {!outOfStock && lowStock && (
                       <div className="absolute top-3 left-3 px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[10px] font-bold shadow-lg z-10">
@@ -302,7 +310,7 @@ export default function Shop() {
                     </button>
 
                     {/* Quick-add overlay button */}
-                    {!outOfStock && (
+                    {!outOfStock && !unavailable && (
                     <button
                       onClick={() => handleAddToCart(p)}
                       className="absolute bottom-4 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl bg-white dark:bg-gray-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 whitespace-nowrap"
@@ -419,15 +427,15 @@ export default function Shop() {
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={() => handleAddToCart(p)}
-                        disabled={outOfStock}
+                        disabled={outOfStock || unavailable}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                          outOfStock
+                          outOfStock || unavailable
                             ? "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
                             : "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30"
                         }`}
                       >
                         <ShoppingCart size={13} />
-                        {outOfStock ? "Out of Stock" : "Add to Cart"}
+                        {unavailable ? "Unavailable" : outOfStock ? "Out of Stock" : "Add to Cart"}
                       </button>
                       <button
                         onClick={() => handleAddToWishlist(p.product_id)}
