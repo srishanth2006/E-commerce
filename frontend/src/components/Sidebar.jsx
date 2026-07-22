@@ -68,7 +68,7 @@ export default function Sidebar({ open, setOpen }) {
           </button>
         </div>
 
-        <nav className="p-3 space-y-1 overflow-y-auto">
+        <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100%-4rem)]" style={{ scrollbarWidth: "thin" }}>
           {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}

@@ -7,7 +7,7 @@
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-import { AlertTriangle, ShoppingBag, FileText, Calendar, Info } from "lucide-react";
+import { AlertTriangle, ShoppingBag, FileText, Calendar, Info, Headphones } from "lucide-react";
 import { useAuth } from "./AuthContext";
 
 const NotificationContext = createContext(null);
@@ -19,6 +19,7 @@ const TYPE_ICONS = {
   invoice_uploaded: FileText,
   expiry_alert: Calendar,
   system: Info,
+  support_ticket: Headphones,
 };
 
 const TYPE_COLORS = {
@@ -28,6 +29,7 @@ const TYPE_COLORS = {
   invoice_uploaded: "#f59e0b",
   expiry_alert: "#f97316",
   system: "#6b7280",
+  support_ticket: "#6366f1",
 };
 
 const TYPE_LABELS = {
@@ -37,6 +39,7 @@ const TYPE_LABELS = {
   invoice_uploaded: "Invoice",
   expiry_alert: "Expiry",
   system: "System",
+  support_ticket: "Support Ticket",
 };
 
 function getWsUrl() {

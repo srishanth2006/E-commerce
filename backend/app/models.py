@@ -355,7 +355,7 @@ class Notification(Base):
     type = Column(
         Enum(
             "low_stock", "purchase_success", "order_success", "invoice_uploaded",
-            "expiry_alert", "system", name="notification_type",
+            "expiry_alert", "system", "support_ticket", name="notification_type",
         ),
         nullable=False,
     )

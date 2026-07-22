@@ -40,7 +40,7 @@ def create_ticket(
         "type": "notification",
         "data": {
             "id": ticket.id,
-            "type": "system",
+            "type": "support_ticket",
             "title": f"New support ticket #{ticket.id}",
             "message": f"{ticket.name}: {ticket.subject or 'No subject'}",
             "is_read": False,
@@ -49,7 +49,7 @@ def create_ticket(
     })
 
     db.add(models.Notification(
-        type="system",
+        type="support_ticket",
         title=f"New support ticket #{ticket.id}",
         message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
     ))
