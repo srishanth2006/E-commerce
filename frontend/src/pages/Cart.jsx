@@ -14,6 +14,15 @@ import toast from "react-hot-toast";
 import { getMyCart, updateCartItem, removeCartItem, clearCart } from "../api/endpoints";
 import ProductImage from "../components/ProductImage";
 
+function isLooseUnit(unit) {
+  const u = (unit || "").toLowerCase().trim();
+  return ["kg", "g", "gm", "gms", "l", "ltr", "ltrs", "litre", "litres", "liter", "liters", "ml"].includes(u);
+}
+
+function looseStep(unit) {
+  return 0.25;
+}
+
 function deliveryMessage(subtotal) {
   if (subtotal >= 500) return { text: "Free delivery on this order!", color: "text-green-600 dark:text-green-400" };
   if (subtotal >= 200) return { text: `Add ₹${(500 - subtotal).toFixed(0)} more for free delivery. ₹20 delivery fee applies.`, color: "text-amber-600 dark:text-amber-400" };
@@ -221,8 +230,13 @@ export default function Cart() {
                   {/* Quantity Stepper */}
                   <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
                     <button
-                      onClick={() => handleQtyChange(it.id, it.quantity - (it.quantity > 1 ? 0.5 : 0.1))}
-                      disabled={it.quantity <= (it.quantity > 1 ? 0.5 : 0.1)}
+                      onClick={() => {
+                        const step = isLooseUnit(it.product?.unit) ? looseStep(it.product?.unit) : 1;
+                        const next = it.quantity - step;
+                        const min = isLooseUnit(it.product?.unit) ? 0.01 : 1;
+                        handleQtyChange(it.id, Math.max(min, next < min ? min : Math.round(next / step) * step));
+                      }}
+                      disabled={it.quantity <= (isLooseUnit(it.product?.unit) ? 0.01 : 1)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 active:scale-90"
                     >
                       <Minus size={14} />
@@ -231,7 +245,10 @@ export default function Cart() {
                       {it.quantity}
                     </span>
                     <button
-                      onClick={() => handleQtyChange(it.id, it.quantity + (it.quantity >= 1 ? 0.5 : 0.1))}
+                      onClick={() => {
+                        const step = isLooseUnit(it.product?.unit) ? looseStep(it.product?.unit) : 1;
+                        handleQtyChange(it.id, Math.round((it.quantity + step) / step) * step);
+                      }}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-150 active:scale-90"
                     >
                       <Plus size={14} />

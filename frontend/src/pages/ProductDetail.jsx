@@ -29,6 +29,18 @@ function formatQty(val, unit) {
   return `${val} ${unit}`;
 }
 
+function isLooseUnit(unit) {
+  const u = (unit || "").toLowerCase().trim();
+  return ["kg", "g", "gm", "gms", "l", "ltr", "ltrs", "litre", "litres", "liter", "liters", "ml", "ltr"].includes(u);
+}
+
+function looseStep(unit) {
+  const u = (unit || "").toLowerCase().trim();
+  if (u === "kg" || u === "g" || u === "gm" || u === "gms") return 0.25;
+  if (u === "l" || u === "ltr" || u === "ltrs" || u === "litre" || u === "litres" || u === "liter" || u === "liters" || u === "ml") return 0.25;
+  return 1;
+}
+
 function parsePresets(raw) {
   if (!raw) return [];
   return raw.split(",").map((s) => s.trim()).filter(Boolean).map(Number).filter((n) => !isNaN(n) && n > 0);
@@ -336,8 +348,8 @@ export default function ProductDetail() {
                   <div className="relative flex-1 max-w-[180px]">
                     <input
                       type="number"
-                      step="0.01"
-                      min="0.01"
+                      step={isLooseUnit(product.unit) ? "0.01" : "1"}
+                      min={isLooseUnit(product.unit) ? "0.01" : "1"}
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-medium focus:border-primary-500 dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-900/30 outline-none transition-all duration-200"
                       placeholder="Enter qty"
                       value={customQty}
@@ -353,7 +365,11 @@ export default function ProductDetail() {
                 <div className="flex items-center">
                   <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1">
                     <button
-                      onClick={() => setQuantity((q) => Math.max(0.01, q - (q > 1 ? 0.5 : 0.1)))}
+                      onClick={() => setQuantity((q) => {
+                        const step = isLooseUnit(product.unit) ? looseStep(product.unit) : 1;
+                        const next = q - step;
+                        return Math.max(isLooseUnit(product.unit) ? 0.01 : 1, next < (isLooseUnit(product.unit) ? 0.01 : 1) ? (isLooseUnit(product.unit) ? 0.01 : 1) : Math.round(next / step) * step);
+                      })}
                       className="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all active:scale-90"
                     >
                       <Minus size={16} />
@@ -362,7 +378,10 @@ export default function ProductDetail() {
                       {formatQty(quantity, product.unit)}
                     </span>
                     <button
-                      onClick={() => setQuantity((q) => q + (q >= 1 ? 0.5 : 0.1))}
+                      onClick={() => setQuantity((q) => {
+                        const step = isLooseUnit(product.unit) ? looseStep(product.unit) : 1;
+                        return Math.round((q + step) / step) * step;
+                      })}
                       className="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow-sm flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all active:scale-90"
                     >
                       <Plus size={16} />

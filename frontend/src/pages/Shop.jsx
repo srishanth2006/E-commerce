@@ -22,6 +22,17 @@ function formatQty(val, unit) {
   return `${val} ${unit}`;
 }
 
+function isLooseUnit(unit) {
+  const u = (unit || "").toLowerCase().trim();
+  return ["kg", "g", "gm", "gms", "l", "ltr", "ltrs", "litre", "litres", "liter", "liters", "ml"].includes(u);
+}
+
+function looseStep(unit) {
+  const u = (unit || "").toLowerCase().trim();
+  if (u === "kg" || u === "g" || u === "gm" || u === "gms") return 0.25;
+  return 0.25;
+}
+
 function parsePresets(raw) {
   if (!raw) return [];
   return raw.split(",").map((s) => s.trim()).filter(Boolean).map(Number).filter((n) => !isNaN(n) && n > 0);
@@ -385,7 +396,12 @@ export default function Shop() {
                     {presets.length > 0 && !isCustom ? (
                       <div className="flex items-center justify-center gap-3">
                         <button
-                          onClick={() => setQty(p.product_id, Math.max(0.01, qty - (qty > 1 ? 0.5 : 0.1)))}
+                          onClick={() => {
+                            const step = isLooseUnit(p.unit) ? looseStep(p.unit) : 1;
+                            const next = qty - step;
+                            const min = isLooseUnit(p.unit) ? 0.01 : 1;
+                            setQty(p.product_id, Math.max(min, next < min ? min : Math.round(next / step) * step));
+                          }}
                           className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 transition-all duration-200"
                         >
                           <Minus size={14} />
@@ -394,7 +410,10 @@ export default function Shop() {
                           {formatQty(qty, p.unit)}
                         </span>
                         <button
-                          onClick={() => setQty(p.product_id, qty + (qty >= 1 ? 0.5 : 0.1))}
+                          onClick={() => {
+                            const step = isLooseUnit(p.unit) ? looseStep(p.unit) : 1;
+                            setQty(p.product_id, Math.round((qty + step) / step) * step);
+                          }}
                           className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 transition-all duration-200"
                         >
                           <Plus size={14} />
@@ -405,8 +424,8 @@ export default function Shop() {
                         <div className="flex items-center gap-1.5">
                           <input
                             type="number"
-                            step="0.01"
-                            min="0.01"
+                            step={isLooseUnit(p.unit) ? "0.01" : "1"}
+                            min={isLooseUnit(p.unit) ? "0.01" : "1"}
                             className="w-full px-3 py-2 rounded-xl text-xs border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 transition-all duration-200"
                             placeholder={`Qty in ${p.unit || "pcs"}`}
                             value={qty === 1 && presets.length > 0 ? "" : qty}
