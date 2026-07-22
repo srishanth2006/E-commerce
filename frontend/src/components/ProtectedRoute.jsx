@@ -27,13 +27,14 @@ export default function ProtectedRoute({ children, requiredType, requiredRole })
       location.pathname.startsWith("/wishlist") ||
       location.pathname.startsWith("/orders") ||
       location.pathname.startsWith("/profile") ||
-      location.pathname.startsWith("/referrals");
-    const loginPath = isStorefront ? "/customer/login" : "/login";
+      location.pathname.startsWith("/referrals") ||
+      location.pathname === "/";
+    const loginPath = isStorefront ? "/customer/login" : "/staff/login";
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   if (requiredType && userType !== requiredType) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={userType === "customer" ? "/customer/login" : "/staff/login"} state={{ from: location }} replace />;
   }
 
   if (requiredRole && role !== requiredRole) {

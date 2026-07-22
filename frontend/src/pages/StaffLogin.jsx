@@ -34,7 +34,7 @@ export default function StaffLogin() {
     try {
       const userData = await login(username, password);
       toast.success("Welcome back!");
-      const destination = from || (userData.role === "admin" ? "/dashboard" : "/billing");
+      const destination = from || (userData.role === "admin" ? "/" : "/billing");
       navigate(destination, { replace: true });
     } catch (err) {
       const msg = err.response?.data?.detail || "Login failed. Please check your credentials.";
