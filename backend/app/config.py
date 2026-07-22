@@ -38,10 +38,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Optional[str] = None
 
     # ---- Email / SMTP (used for verification + password reset emails) ----
-    # If SMTP_HOST is left blank, the app falls back to printing the email
-    # content to the backend console instead of actually sending it - handy
-    # for local development without a real mail account.
-    SMTP_HOST: Optional[str] = None
+    RESEND_API_KEY: Optional[str] = None  # Resend HTTP API (preferred for cloud)
+    SMTP_HOST: Optional[str] = None       # SMTP fallback (local dev only)
     SMTP_PORT: int = 587
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
