@@ -91,7 +91,10 @@ def register(
     db.commit()
     db.refresh(new_user)
 
-    send_verification_email(new_user.email, new_user.username, token, settings.FRONTEND_ORIGIN)
+    try:
+        send_verification_email(new_user.email, new_user.username, token, settings.FRONTEND_ORIGIN)
+    except Exception:
+        print(f"[WARN] Failed to send verification email to {new_user.email}")
     return new_user
 
 
@@ -283,7 +286,10 @@ def forgot_password(request: Request, payload: schemas.ForgotPasswordRequest, db
     db.commit()
 
     name = getattr(account, "name", None) or getattr(account, "username", "there")
-    send_password_reset_email(account.email, name, token, settings.FRONTEND_ORIGIN)
+    try:
+        send_password_reset_email(account.email, name, token, settings.FRONTEND_ORIGIN)
+    except Exception:
+        print(f"[WARN] Failed to send password reset email to {account.email}")
 
     if settings.DEV_EXPOSE_TOKENS:
         generic_message.dev_token = token  # dev/testing convenience only
@@ -351,7 +357,10 @@ def resend_verification(payload: schemas.ResendVerificationRequest, db: Session 
     db.commit()
 
     name = getattr(account, "name", None) or getattr(account, "username", "there")
-    send_verification_email(account.email, name, token, settings.FRONTEND_ORIGIN)
+    try:
+        send_verification_email(account.email, name, token, settings.FRONTEND_ORIGIN)
+    except Exception:
+        print(f"[WARN] Failed to send verification email to {account.email}")
 
     if settings.DEV_EXPOSE_TOKENS:
         generic_message.dev_token = token
