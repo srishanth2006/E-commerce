@@ -27,8 +27,7 @@ export default function ProtectedRoute({ children, requiredType, requiredRole })
       location.pathname.startsWith("/wishlist") ||
       location.pathname.startsWith("/orders") ||
       location.pathname.startsWith("/profile") ||
-      location.pathname.startsWith("/referrals") ||
-      location.pathname === "/";
+      location.pathname.startsWith("/referrals");
     const loginPath = isStorefront ? "/customer/login" : "/staff/login";
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
