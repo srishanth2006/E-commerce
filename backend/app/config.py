@@ -102,7 +102,12 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> List[str]:
-        origins = {self.FRONTEND_ORIGIN, "http://localhost:5173", "http://127.0.0.1:5173"}
+        origins = {
+            self.FRONTEND_ORIGIN,
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "https://e-commerce-delta-rudy-52.vercel.app",
+        }
         if self.CORS_ORIGINS:
             origins.update(o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip())
         # Auto-detect Vercel preview deployments
