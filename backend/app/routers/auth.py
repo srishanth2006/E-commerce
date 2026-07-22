@@ -472,3 +472,17 @@ def toggle_user_active(
     db.commit()
     db.refresh(user)
     return {"message": f"User {'activated' if user.is_active else 'deactivated'}", "is_active": user.is_active}
+
+
+@router.post("/fix-admin-email")
+def fix_admin_email(db: Session = Depends(get_db)):
+    """Temporary: update admin email to e.commerce.site26@gmail.com"""
+    admin = db.query(models.User).filter(models.User.role == "admin").first()
+    if not admin:
+        admin = db.query(models.User).order_by(models.User.user_id).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="No user found")
+    old = admin.email
+    admin.email = "e.commerce.site26@gmail.com"
+    db.commit()
+    return {"message": f"Updated {admin.username} email from {old} to e.commerce.site26@gmail.com"}
