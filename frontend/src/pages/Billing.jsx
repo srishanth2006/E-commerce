@@ -20,18 +20,36 @@ import { useAuth } from "../context/AuthContext";
 import { getProducts, getCustomers, createSale, getProductByBarcode, getPaymentConfig, createRazorpayOrder, getUpiQr } from "../api/endpoints";
 
 const GST_PERCENT = 5; // default GST% applied on provision store items
+const STORAGE_KEY = "pos_draft_bill";
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return null;
+}
+
+function saveDraft(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch { /* ignore */ }
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+}
 
 export default function Billing() {
   const { isAdmin } = useAuth();
+  const draft = loadDraft();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState([]); // [{product, quantity}]
+  const [cart, setCart] = useState(draft?.cart ?? []); // [{product, quantity}]
 
   const [customers, setCustomers] = useState([]);
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(draft?.customerId ?? "");
 
-  const [discount, setDiscount] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [discount, setDiscount] = useState(draft?.discount ?? 0);
+  const [paymentMethod, setPaymentMethod] = useState(draft?.paymentMethod ?? "cash");
   const [placing, setPlacing] = useState(false);
 
   const [invoiceOpen, setInvoiceOpen] = useState(false);
@@ -41,6 +59,13 @@ export default function Billing() {
   const [upiQrOpen, setUpiQrOpen] = useState(false);
   const [upiQrData, setUpiQrData] = useState(null);
   const [upiLoading, setUpiLoading] = useState(false);
+
+  // Auto-save draft to localStorage whenever cart state changes
+  useEffect(() => {
+    if (cart.length > 0) {
+      saveDraft({ cart, customerId, discount, paymentMethod });
+    }
+  }, [cart, customerId, discount, paymentMethod]);
 
   useEffect(() => {
     loadCustomers();
@@ -137,6 +162,7 @@ export default function Billing() {
     setDiscount(0);
     setCustomerId("");
     setPaymentMethod("cash");
+    clearDraft();
   };
 
   const finalizeSale = async (extra = {}) => {
@@ -157,6 +183,7 @@ export default function Billing() {
     setInvoice(res.data);
     setInvoiceOpen(true);
     clearCart();
+    clearDraft();
     loadProducts();
   };
 
@@ -250,6 +277,13 @@ export default function Billing() {
         <h1 className="text-2xl font-bold flex items-center gap-2"><ShoppingCart size={22}/> Billing / POS</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">Search products, build the cart, and generate an invoice.</p>
       </div>
+
+      {draft && cart.length > 0 && (
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg px-4 py-3 flex items-center justify-between text-sm">
+          <span className="text-blue-700 dark:text-blue-300">Draft restored from previous session ({cart.length} items)</span>
+          <button onClick={clearCart} className="text-blue-600 dark:text-blue-400 font-medium hover:underline">Clear Draft</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Product search & grid */}
