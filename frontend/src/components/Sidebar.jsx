@@ -12,7 +12,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 
 const allNavItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true, adminOnly: true },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true, adminOnly: true },
   { to: "/products", label: "Products", icon: Package },
   { to: "/categories", label: "Categories", icon: Tags, adminOnly: true },
   { to: "/inventory", label: "Inventory", icon: Boxes, adminOnly: true },

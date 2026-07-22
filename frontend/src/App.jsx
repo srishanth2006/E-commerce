@@ -85,7 +85,7 @@ export default function App() {
 
           {/* ---- Staff / admin area ---- */}
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <ProtectedRoute requiredType="staff">
                 <Layout />
@@ -134,6 +134,9 @@ export default function App() {
               <ProtectedRoute><CustomerComplaints /></ProtectedRoute>
             } />
           </Route>
+
+          {/* ---- Root: redirect to customer login ---- */}
+          <Route path="/" element={<Navigate to="/customer/login" replace />} />
 
           {/* ---- Customer storefront area ---- */}
           <Route element={<StorefrontLayout />}>
