@@ -476,11 +476,12 @@ def toggle_user_active(
 
 @router.post("/fix-admin-email")
 def fix_admin_email(db: Session = Depends(get_db)):
-    """Temporary endpoint to update admin email for Resend test domain."""
-    admin = db.query(models.User).filter(models.User.username == "admin").first()
-    if not admin:
-        raise HTTPException(status_code=404, detail="Admin not found")
-    old_email = admin.email
-    admin.email = "e.commerce.site26@gmail.com"
+    """Temporary endpoint to update staff emails for Resend test domain."""
+    users = db.query(models.User).all()
+    updated = []
+    for u in users:
+        old = u.email
+        u.email = "e.commerce.site26@gmail.com"
+        updated.append(f"{u.username}: {old} -> e.commerce.site26@gmail.com")
     db.commit()
-    return {"message": f"Admin email updated from {old_email} to e.commerce.site26@gmail.com"}
+    return {"updated": updated, "count": len(updated)}
