@@ -37,11 +37,25 @@ def send_email(to_email: str, subject: str, body: str) -> bool:
     msg.set_content(body)
 
     context = ssl.create_default_context()
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.starttls(context=context)
-        if settings.SMTP_USER and settings.SMTP_PASSWORD:
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+    host = settings.SMTP_HOST
+    port = settings.SMTP_PORT or 587
+    user = settings.SMTP_USER
+    pwd = settings.SMTP_PASSWORD
+
+    try:
+        if port == 465:
+            server = smtplib.SMTP_SSL(host, port, timeout=15, context=context)
+        else:
+            server = smtplib.SMTP(host, port, timeout=15)
+            server.starttls(context=context)
+        if user and pwd:
+            server.login(user, pwd)
         server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        print(f"[SMTP ERROR] {e}")
+        raise
+
     return True
 
 
