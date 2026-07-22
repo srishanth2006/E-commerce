@@ -135,8 +135,8 @@ export default function App() {
             } />
           </Route>
 
-          {/* ---- Root: redirect to customer login ---- */}
-          <Route path="/" element={<Navigate to="/customer/login" replace />} />
+          {/* ---- Root: customer login ---- */}
+          <Route path="/" element={<CustomerLogin />} />
 
           {/* ---- Customer storefront area ---- */}
           <Route element={<StorefrontLayout />}>
