@@ -37,13 +37,12 @@ class Settings(BaseSettings):
     # Comma-separated extra origins, e.g. "https://your-app.vercel.app"
     CORS_ORIGINS: Optional[str] = None
 
-    # ---- Email / SMTP (used for verification + password reset emails) ----
-    RESEND_API_KEY: Optional[str] = None  # Resend HTTP API (preferred for cloud)
-    SMTP_HOST: Optional[str] = None       # SMTP fallback (local dev only)
-    SMTP_PORT: int = 587
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
-    EMAIL_FROM: str = "no-reply@sriprovision.local"
+    # ---- Email / SMTP ----
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 465
+    SMTP_USER: str = "srishanth244@gmail.com"
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = "srishanth244@gmail.com"
 
     # ---- Password reset / email verification token lifetime ----
     RESET_TOKEN_EXPIRE_MINUTES: int = 30

@@ -472,16 +472,3 @@ def toggle_user_active(
     db.commit()
     db.refresh(user)
     return {"message": f"User {'activated' if user.is_active else 'deactivated'}", "is_active": user.is_active}
-
-
-@router.post("/fix-admin-email")
-def fix_admin_email(db: Session = Depends(get_db)):
-    """Temporary endpoint to update staff emails for Resend test domain."""
-    users = db.query(models.User).all()
-    updated = []
-    for u in users:
-        old = u.email
-        u.email = "e.commerce.site26@gmail.com"
-        updated.append(f"{u.username}: {old} -> e.commerce.site26@gmail.com")
-    db.commit()
-    return {"updated": updated, "count": len(updated)}
