@@ -46,78 +46,107 @@ export default function CustomerLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500 text-white mb-3">
-            <ShoppingBag size={28} />
+    <div className="min-h-[100dvh] flex flex-col bg-gradient-to-b from-amber-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 py-3 sm:px-6">
+        <Link to="/shop" className="flex items-center gap-2 font-bold text-sm">
+          <div className="bg-amber-500 text-white rounded-lg p-1.5">
+            <ShoppingBag size={16} />
           </div>
-          <h1 className="text-xl font-bold">E-commerce</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Customer Account</p>
-        </div>
+          E-commerce
+        </Link>
+        <Link to="/shop" className="text-xs text-gray-500 dark:text-gray-400 hover:underline">
+          Browse as Guest
+        </Link>
+      </div>
 
-        <form onSubmit={handleSubmit} className="card space-y-4">
-          {error && (
-            <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-300 rounded-lg px-3 py-2">
-              {error}
+      {/* Main content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-6 sm:py-10">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500 text-white mb-4 shadow-lg shadow-amber-200 dark:shadow-amber-900/30">
+              <ShoppingBag size={32} />
             </div>
-          )}
-
-          <div>
-            <label className="label">Email</label>
-            <input
-              className="input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoFocus
-            />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
           </div>
 
-          <div>
-            <label className="label">Password</label>
-            <div className="relative">
+          {/* Form card */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 space-y-4">
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-300 rounded-xl px-4 py-3">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="label">Email</label>
               <input
-                className="input pr-10"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                className="input py-3 text-base"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoFocus
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                onClick={() => setShowPassword((v) => !v)}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+            </div>
+
+            <div>
+              <label className="label">Password</label>
+              <div className="relative">
+                <input
+                  className="input py-3 text-base pr-12"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1"
+                  onClick={() => setShowPassword((v) => !v)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-primary w-full py-3 text-base"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <LogIn size={18} />
+              )}
+              {loading ? "Signing in..." : "Sign In"}
+            </button>
+
+            <GoogleLoginButton onSuccess={() => navigate(from, { replace: true })} />
+
+            <div className="flex items-center justify-between text-sm">
+              <Link to="/forgot-password?type=customer" className="text-primary-600 hover:underline">
+                Forgot password?
+              </Link>
+              <Link to="/customer/register" className="text-primary-600 hover:underline">
+                Create account
+              </Link>
+            </div>
+
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Store staff?{" "}
+                <Link to="/staff/login" className="text-primary-600 font-medium hover:underline">
+                  Staff Login
+                </Link>
+              </p>
             </div>
           </div>
-
-          <button type="submit" disabled={loading} className="btn-primary w-full">
-            <LogIn size={16} />
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-
-          <GoogleLoginButton onSuccess={() => navigate(from, { replace: true })} />
-
-          <div className="flex items-center justify-between text-xs">
-            <Link to="/forgot-password?type=customer" className="text-primary-600 hover:underline">
-              Forgot password?
-            </Link>
-            <Link to="/customer/register" className="text-primary-600 hover:underline">
-              Create an account
-            </Link>
-          </div>
-
-          <p className="text-xs text-center text-gray-400">
-            Store staff?{" "}
-            <Link to="/staff/login" className="hover:underline">
-              Sign in here
-            </Link>
-          </p>
-        </form>
+        </div>
       </div>
     </div>
   );
