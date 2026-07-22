@@ -9,7 +9,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Trash2, Minus, Plus, ArrowRight, AlertTriangle, CheckCircle, X } from "lucide-react";
+import { Trash2, Minus, Plus, ArrowRight, AlertTriangle, CheckCircle, X, ShoppingBag } from "lucide-react";
 import toast from "react-hot-toast";
 import { getMyCart, updateCartItem, removeCartItem, clearCart } from "../api/endpoints";
 import ProductImage from "../components/ProductImage";
