@@ -104,6 +104,7 @@ class Settings(BaseSettings):
             "http://localhost:5173",
             "http://127.0.0.1:5173",
             "https://e-commerce-delta-rudy-52.vercel.app",
+            "https://e-commerce-7by926fke-srishanth244-2400s-projects.vercel.app",
         }
         if self.CORS_ORIGINS:
             origins.update(o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip())
