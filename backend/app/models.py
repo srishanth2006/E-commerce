@@ -456,6 +456,7 @@ class SupportTicket(Base):
     customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=True)
     name = Column(String(100), nullable=False)
     email = Column(String(150), nullable=True)
+    phone = Column(String(20), nullable=True)
     order_id = Column(String(20), nullable=True)
     subject = Column(String(50), nullable=True)
     message = Column(Text, nullable=False)

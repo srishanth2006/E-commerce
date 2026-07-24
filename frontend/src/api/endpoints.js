@@ -224,7 +224,7 @@ export const getMyReferral = () => api.get("/referrals/my-code");
 
 // --- Support Tickets ---
 export const createSupportTicket = (data) => api.post("/support/tickets", data);
-export const trackSupportTicket = (ticketId, email) => api.get(`/support/track`, { params: { ticket_id: ticketId, email } });
+export const trackSupportTicket = (ticketId, email, phone) => api.get(`/support/track`, { params: { ticket_id: ticketId, email, phone } });
 export const getSupportTickets = (status) => api.get("/support/tickets", { params: status ? { status } : {} });
 export const getSupportTicket = (id) => api.get(`/support/tickets/${id}`);
 export const replyToTicket = (id, data) => api.put(`/support/tickets/${id}`, data);

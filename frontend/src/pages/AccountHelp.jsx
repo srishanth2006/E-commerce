@@ -24,19 +24,19 @@ const STATUS_LABELS = {
 export default function AccountHelp() {
   const [openFaq, setOpenFaq] = useState(null);
 
-  const [issueForm, setIssueForm] = useState({ name: "", email: "", message: "" });
+  const [issueForm, setIssueForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [sending, setSending] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState(null);
 
   const [trackId, setTrackId] = useState("");
-  const [trackEmail, setTrackEmail] = useState("");
+  const [trackPhone, setTrackPhone] = useState("");
   const [tracking, setTracking] = useState(false);
   const [trackedTicket, setTrackedTicket] = useState(null);
 
   const handleSubmitIssue = async (e) => {
     e.preventDefault();
-    if (!issueForm.name || !issueForm.message) {
-      toast.error("Please fill in your name and message");
+    if (!issueForm.name || !issueForm.phone || !issueForm.message) {
+      toast.error("Please fill in your name, phone number, and message");
       return;
     }
     setSending(true);
@@ -44,12 +44,13 @@ export default function AccountHelp() {
       const res = await createSupportTicket({
         name: issueForm.name,
         email: issueForm.email || undefined,
+        phone: issueForm.phone || undefined,
         subject: "account_access",
         message: issueForm.message,
       });
       setSubmittedTicket(res.data);
       toast.success("Issue submitted! Our team will respond within 24 hours.");
-      setIssueForm({ name: "", email: "", message: "" });
+      setIssueForm({ name: "", email: "", phone: "", message: "" });
     } catch {
       toast.error("Failed to submit. Please try again.");
     } finally {
@@ -59,13 +60,13 @@ export default function AccountHelp() {
 
   const handleTrack = async (e) => {
     e.preventDefault();
-    if (!trackId) return toast.error("Please enter your ticket ID");
+    if (!trackId) return toast.error("Please enter your ticket number");
     setTracking(true);
     try {
-      const res = await trackSupportTicket(trackId, trackEmail);
+      const res = await trackSupportTicket(trackId, "", trackPhone);
       setTrackedTicket(res.data);
     } catch {
-      toast.error("Ticket not found. Check your ticket ID and email.");
+      toast.error("Ticket not found. Check your ticket number and phone.");
       setTrackedTicket(null);
     } finally {
       setTracking(false);
@@ -120,12 +121,12 @@ export default function AccountHelp() {
           </div>
           <form onSubmit={handleTrack} className="flex flex-col sm:flex-row items-end gap-3">
             <div className="flex-1 w-full">
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Ticket ID</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Ticket Number</label>
               <input className="input" placeholder="e.g. 5" type="number" value={trackId} onChange={(e) => setTrackId(e.target.value)} />
             </div>
             <div className="flex-1 w-full">
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email (optional)</label>
-              <input className="input" placeholder="your@email.com" type="email" value={trackEmail} onChange={(e) => setTrackEmail(e.target.value)} />
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Phone Number</label>
+              <input className="input" placeholder="Your phone number" type="tel" value={trackPhone} onChange={(e) => setTrackPhone(e.target.value)} />
             </div>
             <button type="submit" disabled={tracking} className="btn-primary flex items-center gap-2 whitespace-nowrap">
               {tracking ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Search size={14} />}
@@ -167,21 +168,27 @@ export default function AccountHelp() {
 
         {/* Submit Success */}
         {submittedTicket && (
-          <div className="card p-5 bg-green-50 dark:bg-green-900/10 border-2 border-green-200 dark:border-green-800 animate-[fadeIn_0.3s_ease-out]">
-            <div className="flex items-start gap-3">
-              <CheckCircle size={22} className="text-green-600 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-bold text-green-800 dark:text-green-300">Issue Submitted!</h3>
-                <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-                  Ticket <span className="font-bold">#{submittedTicket.id}</span>. Our team will respond within 24 hours.
-                </p>
-                <button
-                  onClick={() => { setTrackId(String(submittedTicket.id)); setTrackEmail(submittedTicket.email || ""); setTrackedTicket(submittedTicket); setSubmittedTicket(null); }}
-                  className="mt-2 text-sm font-medium text-green-700 dark:text-green-300 hover:underline flex items-center gap-1"
-                >
-                  View ticket <ArrowRight size={12} />
-                </button>
+          <div className="card p-6 bg-green-50 dark:bg-green-900/10 border-2 border-green-200 dark:border-green-800 animate-[fadeIn_0.3s_ease-out]">
+            <div className="text-center space-y-3">
+              <CheckCircle size={40} className="text-green-600 mx-auto" />
+              <h3 className="text-xl font-bold text-green-800 dark:text-green-300">Issue Submitted!</h3>
+              <p className="text-sm text-green-700 dark:text-green-400">
+                Your ticket number is:
+              </p>
+              <div className="inline-flex items-center gap-2 bg-green-100 dark:bg-green-900/40 rounded-xl px-5 py-3">
+                <Hash size={20} className="text-green-700 dark:text-green-300" />
+                <span className="text-2xl font-extrabold text-green-800 dark:text-green-200">#{submittedTicket.id}</span>
               </div>
+              <p className="text-xs text-green-600 dark:text-green-500">
+                Save this ticket number to track your issue later.
+                Our team will respond within 24 hours.
+              </p>
+              <button
+                onClick={() => { setTrackId(String(submittedTicket.id)); setTrackPhone(submittedTicket.phone || ""); setTrackedTicket(submittedTicket); setSubmittedTicket(null); }}
+                className="text-sm font-medium text-green-700 dark:text-green-300 hover:underline flex items-center gap-1 mx-auto"
+              >
+                View your ticket <ArrowRight size={12} />
+              </button>
             </div>
           </div>
         )}
@@ -205,15 +212,26 @@ export default function AccountHelp() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Phone Number *</label>
                 <input
-                  type="email"
+                  type="tel"
                   className="input"
-                  placeholder="your@email.com"
-                  value={issueForm.email}
-                  onChange={(e) => setIssueForm({ ...issueForm, email: e.target.value })}
+                  placeholder="Your phone number"
+                  value={issueForm.phone}
+                  onChange={(e) => setIssueForm({ ...issueForm, phone: e.target.value })}
+                  required
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email (optional)</label>
+              <input
+                type="email"
+                className="input"
+                placeholder="your@email.com"
+                value={issueForm.email}
+                onChange={(e) => setIssueForm({ ...issueForm, email: e.target.value })}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Describe your issue *</label>

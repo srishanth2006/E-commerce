@@ -28,6 +28,7 @@ def create_ticket(
     ticket = models.SupportTicket(
         name=payload.name,
         email=payload.email,
+        phone=payload.phone,
         order_id=payload.order_id,
         subject=payload.subject,
         message=payload.message,
@@ -86,18 +87,23 @@ def get_ticket(
 def track_ticket(
     ticket_id: int,
     email: str = "",
+    phone: str = "",
     db: Session = Depends(get_db),
 ):
-    """Public: customer tracks their ticket by ID + email for verification."""
+    """Public: customer tracks their ticket by ID + email or phone for verification."""
     ticket = db.query(models.SupportTicket).filter(models.SupportTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     if email and ticket.email and ticket.email.lower() != email.lower():
-        raise HTTPException(status_code=403, detail="Email does not match this ticket")
+        if phone and ticket.phone and phone != ticket.phone:
+            raise HTTPException(status_code=403, detail="Email or phone does not match this ticket")
+    if phone and ticket.phone and not email and phone != ticket.phone:
+        raise HTTPException(status_code=403, detail="Phone does not match this ticket")
     return {
         "id": ticket.id,
         "name": ticket.name,
         "email": ticket.email,
+        "phone": ticket.phone,
         "subject": ticket.subject,
         "message": ticket.message,
         "status": ticket.status,

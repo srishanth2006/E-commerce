@@ -103,6 +103,18 @@ def on_startup():
     except Exception as exc:
         logging.warning("Deferred create_all also failed: %s", exc)
 
+    # Migration: add phone column to support_tickets if missing
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            cols = [r[0] for r in conn.execute(text("SHOW COLUMNS FROM support_tickets")).fetchall()]
+            if "phone" not in cols:
+                conn.execute(text("ALTER TABLE support_tickets ADD COLUMN phone VARCHAR(20)"))
+                conn.commit()
+                logging.info("Added phone column to support_tickets table")
+    except Exception as exc:
+        logging.warning("Migration for support_tickets.phone skipped: %s", exc)
+
 
 @app.get("/", tags=["Health"])
 def root():

@@ -663,6 +663,7 @@ class ReferralOut(BaseModel):
 class SupportTicketCreate(BaseModel):
     name: str
     email: Optional[str] = None
+    phone: Optional[str] = None
     order_id: Optional[str] = None
     subject: Optional[str] = None
     message: str
@@ -677,6 +678,7 @@ class SupportTicketOut(BaseModel):
     customer_id: Optional[int] = None
     name: str
     email: Optional[str] = None
+    phone: Optional[str] = None
     order_id: Optional[str] = None
     subject: Optional[str] = None
     message: str
