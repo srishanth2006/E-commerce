@@ -107,13 +107,12 @@ def on_startup():
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
-            cols = [r[0] for r in conn.execute(text("SHOW COLUMNS FROM support_tickets")).fetchall()]
-            if "phone" not in cols:
-                conn.execute(text("ALTER TABLE support_tickets ADD COLUMN phone VARCHAR(20)"))
-                conn.commit()
-                logging.info("Added phone column to support_tickets table")
+            conn.execute(text("ALTER TABLE support_tickets ADD COLUMN phone VARCHAR(20)"))
+            conn.commit()
+            logging.info("Added phone column to support_tickets table")
     except Exception as exc:
-        logging.warning("Migration for support_tickets.phone skipped: %s", exc)
+        # Column already exists or other non-critical issue
+        logging.info("Migration support_tickets.phone: %s (expected if already exists)", exc)
 
 
 @app.get("/", tags=["Health"])
