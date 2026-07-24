@@ -90,31 +90,15 @@ def on_startup():
         websocket.set_event_loop(loop)
     except RuntimeError:
         pass
-    # Retry table creation in case the first attempt failed
-    try:
-        Base.metadata.create_all(bind=engine)
-    except Exception as exc:
-        logging.warning("Deferred create_all also failed: %s", exc)
 
-    # Migration: add phone column to support_tickets if missing
+    # Migration: ensure phone column exists on support_tickets
     try:
         from sqlalchemy import text
         with engine.connect() as conn:
             conn.execute(text("ALTER TABLE support_tickets ADD COLUMN phone VARCHAR(20)"))
             conn.commit()
-            logging.info("Added phone column to support_tickets table")
-    except Exception as exc:
-        logging.info("Migration support_tickets.phone: %s (expected if already exists)", exc)
-
-    # Migration: convert notifications.type from ENUM to VARCHAR to avoid constraint issues
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE notifications MODIFY COLUMN type VARCHAR(50) NOT NULL"))
-            conn.commit()
-            logging.info("Converted notifications.type to VARCHAR")
-    except Exception as exc:
-        logging.info("Migration notifications.type: %s (expected if already done)", exc)
+    except Exception:
+        pass  # Column already exists
 
 
 @app.get("/", tags=["Health"])
