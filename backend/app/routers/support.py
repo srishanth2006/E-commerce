@@ -19,54 +19,41 @@ from app.routers.websocket import broadcast_sync
 router = APIRouter(prefix="/support", tags=["Support"])
 
 
-@router.post("/tickets")
+@router.post("/tickets", response_model=schemas.SupportTicketOut)
 def create_ticket(
     payload: schemas.SupportTicketCreate,
     db: Session = Depends(get_db),
 ):
     """Anyone (logged in or not) can submit a support ticket."""
-    try:
-        ticket = models.SupportTicket(
-            name=payload.name,
-            email=payload.email,
-            phone=payload.phone,
-            order_id=payload.order_id,
-            subject=payload.subject,
-            message=payload.message,
-        )
-        db.add(ticket)
-        db.commit()
-        db.refresh(ticket)
-    except Exception as exc:
-        import logging
-        logging.error("Failed to create support ticket: %s", exc)
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to create ticket")
+    ticket = models.SupportTicket(
+        name=payload.name,
+        email=payload.email,
+        order_id=payload.order_id,
+        subject=payload.subject,
+        message=payload.message,
+    )
+    db.add(ticket)
+    db.commit()
+    db.refresh(ticket)
 
-    try:
-        broadcast_sync({
-            "type": "notification",
-            "data": {
-                "id": ticket.id,
-                "type": "support_ticket",
-                "title": f"New support ticket #{ticket.id}",
-                "message": f"{ticket.name}: {ticket.subject or 'No subject'}",
-                "is_read": False,
-                "created_at": str(ticket.created_at),
-            },
-        })
-    except Exception:
-        pass
+    broadcast_sync({
+        "type": "notification",
+        "data": {
+            "id": ticket.id,
+            "type": "support_ticket",
+            "title": f"New support ticket #{ticket.id}",
+            "message": f"{ticket.name}: {ticket.subject or 'No subject'}",
+            "is_read": False,
+            "created_at": str(ticket.created_at),
+        },
+    })
 
-    try:
-        db.add(models.Notification(
-            type="support_ticket",
-            title=f"New support ticket #{ticket.id}",
-            message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
-        ))
-        db.commit()
-    except Exception:
-        db.rollback()
+    db.add(models.Notification(
+        type="support_ticket",
+        title=f"New support ticket #{ticket.id}",
+        message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
+    ))
+    db.commit()
 
     return ticket
 
@@ -99,23 +86,18 @@ def get_ticket(
 def track_ticket(
     ticket_id: int,
     email: str = "",
-    phone: str = "",
     db: Session = Depends(get_db),
 ):
-    """Public: customer tracks their ticket by ID + email or phone for verification."""
+    """Public: customer tracks their ticket by ID + email for verification."""
     ticket = db.query(models.SupportTicket).filter(models.SupportTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     if email and ticket.email and ticket.email.lower() != email.lower():
-        if phone and ticket.phone and phone != ticket.phone:
-            raise HTTPException(status_code=403, detail="Email or phone does not match this ticket")
-    if phone and ticket.phone and not email and phone != ticket.phone:
-        raise HTTPException(status_code=403, detail="Phone does not match this ticket")
+        raise HTTPException(status_code=403, detail="Email does not match this ticket")
     return {
         "id": ticket.id,
         "name": ticket.name,
         "email": ticket.email,
-        "phone": ticket.phone,
         "subject": ticket.subject,
         "message": ticket.message,
         "status": ticket.status,
