@@ -25,32 +25,24 @@ def create_ticket(
     db: Session = Depends(get_db),
 ):
     """Anyone (logged in or not) can submit a support ticket."""
-    ticket = models.SupportTicket(
-        name=payload.name,
-        email=payload.email,
-        phone=payload.phone,
-        order_id=payload.order_id,
-        subject=payload.subject,
-        message=payload.message,
-    )
-    db.add(ticket)
-    db.commit()
-    db.refresh(ticket)
-
+    import logging
     try:
-        broadcast_sync({
-            "type": "notification",
-            "data": {
-                "id": ticket.id,
-                "type": "support_ticket",
-                "title": f"New support ticket #{ticket.id}",
-                "message": f"{ticket.name}: {ticket.subject or 'No subject'}",
-                "is_read": False,
-                "created_at": str(ticket.created_at),
-            },
-        })
-    except Exception:
-        pass
+        ticket = models.SupportTicket(
+            name=payload.name,
+            email=payload.email,
+            phone=payload.phone,
+            order_id=payload.order_id,
+            subject=payload.subject,
+            message=payload.message,
+        )
+        db.add(ticket)
+        db.commit()
+        db.refresh(ticket)
+        logging.info("Ticket #%s created successfully", ticket.id)
+    except Exception as exc:
+        logging.error("TICKET CREATE FAILED: %s", exc, exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create ticket: {exc}")
 
     try:
         db.add(models.Notification(
@@ -59,7 +51,9 @@ def create_ticket(
             message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
         ))
         db.commit()
-    except Exception:
+        logging.info("Notification created for ticket #%s", ticket.id)
+    except Exception as exc:
+        logging.error("NOTIFICATION FAILED: %s", exc, exc_info=True)
         db.rollback()
 
     return {

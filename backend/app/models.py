@@ -352,13 +352,7 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(
-        Enum(
-            "low_stock", "purchase_success", "order_success", "invoice_uploaded",
-            "expiry_alert", "system", "support_ticket", name="notification_type",
-        ),
-        nullable=False,
-    )
+    type = Column(String(50), nullable=False)
     title = Column(String(150), nullable=False)
     message = Column(String(500), nullable=True)
     is_read = Column(Boolean, default=False)
