@@ -129,19 +129,21 @@ export default function CustomerLogin() {
             <GoogleLoginButton onSuccess={() => navigate(from, { replace: true })} />
 
             <div className="flex items-center justify-between text-sm">
-              <Link to="/forgot-password?type=customer" className="text-primary-600 hover:underline">
-                Forgot password?
-              </Link>
               <Link to="/customer/register" className="text-primary-600 hover:underline">
                 Create account
               </Link>
             </div>
 
-            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center">
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center space-y-2">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Store staff?{" "}
-                <Link to="/staff/login" className="text-primary-600 font-medium hover:underline">
-                  Staff Login
+                Trouble signing in?{" "}
+                <a href="https://wa.me/919999999999?text=Hi%20I%20need%20help%20with%20my%20account" target="_blank" rel="noopener noreferrer" className="text-primary-600 font-medium hover:underline">
+                  Contact Owner
+                </a>
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                <Link to="/help" className="text-primary-600 font-medium hover:underline">
+                  Submit an Issue
                 </Link>
               </p>
             </div>

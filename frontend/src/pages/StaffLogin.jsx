@@ -127,9 +127,6 @@ export default function StaffLogin() {
             </button>
 
             <div className="flex items-center justify-between text-sm">
-              <Link to="/forgot-password?type=staff" className="text-primary-600 hover:underline">
-                Forgot password?
-              </Link>
               <Link to="/staff/register" className="text-primary-600 hover:underline">
                 Create staff account
               </Link>
@@ -137,9 +134,9 @@ export default function StaffLogin() {
 
             <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Owner?{" "}
+                Trouble signing in?{" "}
                 <Link to="/login" className="text-primary-600 font-medium hover:underline">
-                  Owner Login
+                  Contact Owner
                 </Link>
               </p>
             </div>
