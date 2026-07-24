@@ -53,7 +53,7 @@ def create_ticket(
         db.commit()
         logging.info("Notification created for ticket #%s", ticket.id)
     except Exception as exc:
-        logging.error("NOTIFICATION FAILED: %s", exc, exc_info=True)
+        logging.error("NOTIFICATION FAILED (non-blocking): %s", exc, exc_info=True)
         db.rollback()
 
     return {

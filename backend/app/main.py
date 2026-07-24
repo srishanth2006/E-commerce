@@ -28,12 +28,7 @@ from app.routers import (
     orders, coupons, referrals, websocket, support, seed,
 )
 
-# Creates any tables that don't already exist yet.
-try:
-    Base.metadata.create_all(bind=engine)
-except Exception as exc:
-    import logging
-    logging.warning("create_all failed on startup (will retry on first request): %s", exc)
+# Tables are created on startup in on_startup()
 
 app = FastAPI(
     title="E-commerce Management System API",
