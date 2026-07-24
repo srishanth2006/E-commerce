@@ -56,6 +56,7 @@ const Orders = lazy(() => import("./pages/Orders"));
 const ReferralPage = lazy(() => import("./pages/ReferralPage"));
 const CustomerProfile = lazy(() => import("./pages/CustomerProfile"));
 const HelpDesk = lazy(() => import("./pages/HelpDesk"));
+const AccountHelp = lazy(() => import("./pages/AccountHelp"));
 
 function Loader() {
   return (
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/account-help" element={<AccountHelp />} />
 
           {/* ---- Staff / admin area ---- */}
           <Route

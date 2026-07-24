@@ -137,7 +137,7 @@ export default function CustomerLogin() {
             <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Trouble signing in?{" "}
-                <Link to="/help" className="text-primary-600 font-medium hover:underline">
+                <Link to="/account-help" className="text-primary-600 font-medium hover:underline">
                   Report an Issue
                 </Link>
               </p>
