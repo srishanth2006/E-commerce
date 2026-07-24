@@ -28,7 +28,12 @@ from app.routers import (
     orders, coupons, referrals, websocket, support, seed,
 )
 
-# Tables are created on startup in on_startup()
+# Creates any tables that don't already exist yet.
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as exc:
+    import logging
+    logging.warning("create_all failed on startup (will retry on first request): %s", exc)
 
 app = FastAPI(
     title="E-commerce Management System API",
@@ -99,6 +104,15 @@ def on_startup():
             conn.commit()
     except Exception:
         pass  # Column already exists
+
+    # Migration: convert notifications.type from ENUM to VARCHAR
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE notifications MODIFY COLUMN type VARCHAR(50) NOT NULL"))
+            conn.commit()
+    except Exception:
+        pass  # Already done
 
 
 @app.get("/", tags=["Health"])
