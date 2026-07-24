@@ -28,27 +28,13 @@ from app.routers import (
     orders, coupons, referrals, websocket, support, seed,
 )
 
-# Creates any tables that don't already exist yet.
-# For a production project you'd normally use Alembic migrations instead,
-# but create_all() is perfect for getting a portfolio project running fast.
-try:
-    Base.metadata.create_all(bind=engine)
-except Exception as exc:
-    import logging
-    logging.warning("create_all failed on startup (will retry on first request): %s", exc)
+# Table creation is handled in on_startup() below.
 
 app = FastAPI(
     title="E-commerce Management System API",
     description="Backend REST API for a small family-owned grocery / provision store.",
     version="1.0.0",
 )
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    import logging
-    logging.error("Unhandled exception on %s: %s", request.url.path, exc, exc_info=True)
-    from fastapi.responses import JSONResponse
-    return JSONResponse(status_code=500, content={"detail": str(exc)})
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
