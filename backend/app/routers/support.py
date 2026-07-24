@@ -25,36 +25,48 @@ def create_ticket(
     db: Session = Depends(get_db),
 ):
     """Anyone (logged in or not) can submit a support ticket."""
-    ticket = models.SupportTicket(
-        name=payload.name,
-        email=payload.email,
-        phone=payload.phone,
-        order_id=payload.order_id,
-        subject=payload.subject,
-        message=payload.message,
-    )
-    db.add(ticket)
-    db.commit()
-    db.refresh(ticket)
+    try:
+        ticket = models.SupportTicket(
+            name=payload.name,
+            email=payload.email,
+            phone=payload.phone,
+            order_id=payload.order_id,
+            subject=payload.subject,
+            message=payload.message,
+        )
+        db.add(ticket)
+        db.commit()
+        db.refresh(ticket)
+    except Exception as exc:
+        import logging
+        logging.error("Failed to create support ticket: %s", exc)
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to create ticket")
 
-    broadcast_sync({
-        "type": "notification",
-        "data": {
-            "id": ticket.id,
-            "type": "support_ticket",
-            "title": f"New support ticket #{ticket.id}",
-            "message": f"{ticket.name}: {ticket.subject or 'No subject'}",
-            "is_read": False,
-            "created_at": str(ticket.created_at),
-        },
-    })
+    try:
+        broadcast_sync({
+            "type": "notification",
+            "data": {
+                "id": ticket.id,
+                "type": "support_ticket",
+                "title": f"New support ticket #{ticket.id}",
+                "message": f"{ticket.name}: {ticket.subject or 'No subject'}",
+                "is_read": False,
+                "created_at": str(ticket.created_at),
+            },
+        })
+    except Exception:
+        pass
 
-    db.add(models.Notification(
-        type="support_ticket",
-        title=f"New support ticket #{ticket.id}",
-        message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
-    ))
-    db.commit()
+    try:
+        db.add(models.Notification(
+            type="support_ticket",
+            title=f"New support ticket #{ticket.id}",
+            message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
+        ))
+        db.commit()
+    except Exception:
+        db.rollback()
 
     return ticket
 
