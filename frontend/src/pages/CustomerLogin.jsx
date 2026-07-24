@@ -134,16 +134,11 @@ export default function CustomerLogin() {
               </Link>
             </div>
 
-            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center space-y-2">
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Trouble signing in?{" "}
-                <a href="https://wa.me/919999999999?text=Hi%20I%20need%20help%20with%20my%20account" target="_blank" rel="noopener noreferrer" className="text-primary-600 font-medium hover:underline">
-                  Contact Owner
-                </a>
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
                 <Link to="/help" className="text-primary-600 font-medium hover:underline">
-                  Submit an Issue
+                  Report an Issue
                 </Link>
               </p>
             </div>

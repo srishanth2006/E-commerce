@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  HelpCircle, MessageCircle, Phone, Mail, ChevronDown, ChevronUp,
+  HelpCircle, Phone, Mail, ChevronDown, ChevronUp,
   Package, Truck, CreditCard, RotateCcw, Search, Send, Clock,
   MapPin, Headphones, ArrowRight, CheckCircle, Hash, MessageSquare
 } from "lucide-react";
@@ -49,7 +49,6 @@ const FAQ_DATA = [
 
 const CONTACT_OPTIONS = [
   { icon: <Phone size={20} />, label: "Call Us", value: "+91 98765 43210", href: "tel:+919876543210", color: "bg-green-500" },
-  { icon: <MessageCircle size={20} />, label: "WhatsApp", value: "Chat on WhatsApp", href: "https://wa.me/919876543210", color: "bg-emerald-500" },
   { icon: <Mail size={20} />, label: "Email", value: "support@ecommerce.in", href: "mailto:support@ecommerce.in", color: "bg-blue-500" },
 ];
 
