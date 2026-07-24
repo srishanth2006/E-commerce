@@ -42,6 +42,13 @@ app = FastAPI(
     description="Backend REST API for a small family-owned grocery / provision store.",
     version="1.0.0",
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import logging
+    logging.error("Unhandled exception on %s: %s", request.url.path, exc, exc_info=True)
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
