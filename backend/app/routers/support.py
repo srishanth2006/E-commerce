@@ -26,34 +26,31 @@ def create_ticket(
 ):
     """Anyone (logged in or not) can submit a support ticket."""
     import logging
-    try:
-        ticket = models.SupportTicket(
-            name=payload.name,
-            email=payload.email,
-            phone=payload.phone,
-            order_id=payload.order_id,
-            subject=payload.subject,
-            message=payload.message,
-        )
-        db.add(ticket)
-        db.commit()
-        db.refresh(ticket)
-        logging.info("Ticket #%s created successfully", ticket.id)
-    except Exception as exc:
-        logging.error("TICKET CREATE FAILED: %s", exc, exc_info=True)
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create ticket: {exc}")
+    ticket = models.SupportTicket(
+        name=payload.name,
+        email=payload.email,
+        phone=payload.phone,
+        order_id=payload.order_id,
+        subject=payload.subject,
+        message=payload.message,
+    )
+    db.add(ticket)
+    db.commit()
+    db.refresh(ticket)
 
+    # Fire-and-forget: create admin notification (non-critical)
     try:
-        db.add(models.Notification(
-            type="support_ticket",
-            title=f"New support ticket #{ticket.id}",
-            message=f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}",
-        ))
+        db.execute(
+            __import__("sqlalchemy").text(
+                "INSERT INTO notifications (type, title, message, is_read) "
+                "VALUES (:type, :title, :message, 0)"
+            ),
+            {"type": "system", "title": f"New support ticket #{ticket.id}",
+             "message": f"{ticket.name}: {ticket.subject or 'No subject'} — {ticket.message[:80]}"},
+        )
         db.commit()
-        logging.info("Notification created for ticket #%s", ticket.id)
     except Exception as exc:
-        logging.error("NOTIFICATION FAILED (non-blocking): %s", exc, exc_info=True)
+        logging.warning("Notification insert skipped: %s", exc)
         db.rollback()
 
     return {
