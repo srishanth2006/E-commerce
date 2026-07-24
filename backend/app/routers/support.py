@@ -19,7 +19,7 @@ from app.routers.websocket import broadcast_sync
 router = APIRouter(prefix="/support", tags=["Support"])
 
 
-@router.post("/tickets", response_model=schemas.SupportTicketOut)
+@router.post("/tickets")
 def create_ticket(
     payload: schemas.SupportTicketCreate,
     db: Session = Depends(get_db),
